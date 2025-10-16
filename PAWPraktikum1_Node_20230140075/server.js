@@ -19,3 +19,14 @@
  	  console.log(`Express server running at http://localhost:${PORT}/`);
  	});
  	app.use('/api/books', bookRoutes);
+	app.use((req, res, next) => {
+    res.status(404).send("Error 404: Endpoint Tidak Ditemukan.");
+});
+
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ 
+        message: "Terjadi Kesalahan Internal Server (500)",
+        error: err.message 
+    });
+});
