@@ -1,28 +1,74 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Navbar from './components/Navbar';
-import LoginPage from './LoginPage'; // Pastikan path ini benar sesuai struktur folder Anda
-import RegisterPage from './RegisterPage'; // Pastikan path ini benar
-import DashboardPage from './components/DashboardPage';
-import AttendancePage from './components/AttendancePage';
-import ReportPage from './components/ReportPage';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import LoginPage from "./components/LoginPage";
+import RegisterPage from "./components/RegisterPage";
+import DashboardPage from "./components/DashboardPage";
+import AttendancePage from "./components/AttendancePage";
+import ReportPage from "./components/ReportPage"; // Pastikan sudah di-import
+import Navbar from "./components/Navbar";
+
+// Komponen Layout agar Navbar otomatis muncul di halaman tertentu
+const Layout = ({ children }) => {
+  const location = useLocation();
+  // Daftar path yang TIDAK boleh ada Navbar (Login & Register)
+  const hideNavbarPaths = ["/login", "/register", "/"];
+
+  const showNavbar = !hideNavbarPaths.includes(location.pathname);
+
+  return (
+    <>
+      {showNavbar && <Navbar />}
+      {children}
+    </>
+  );
+};
+
+// Komponen PrivateRoute untuk memproteksi halaman
+const PrivateRoute = ({ children }) => {
+  const token = localStorage.getItem("token");
+  // Jika tidak ada token, tendang ke login
+  return token ? children : <Navigate to="/login" />;
+};
 
 function App() {
   return (
     <Router>
-      <div className="bg-gray-50 min-h-screen font-sans">
-        <Navbar />
+      <Layout>
         <Routes>
+          {/* Rute Publik */}
+          <Route path="/" element={<Navigate to="/login" />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+
+          {/* Rute Private (Butuh Login) */}
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute>
+                <DashboardPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/attendance"
+            element={
+              <PrivateRoute>
+                <AttendancePage />
+              </PrivateRoute>
+            }
+          />
           
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/presensi" element={<AttendancePage />} />
-          <Route path="/laporan" element={<ReportPage />} />
-          
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          {/* PASTIKAN RUTE LAPORAN ADA DI SINI */}
+          <Route
+            path="/report"
+            element={
+              <PrivateRoute>
+                <ReportPage />
+              </PrivateRoute>
+            }
+          />
         </Routes>
-      </div>
+      </Layout>
     </Router>
   );
 }

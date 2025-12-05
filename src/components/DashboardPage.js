@@ -1,142 +1,140 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-} from 'chart.js';
-import { Bar, Doughnut } from 'react-chartjs-2';
-import { jwtDecode } from 'jwt-decode'; // Pastikan import ini benar sesuai versi Anda
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-);
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { UserCheck, FileText, LogOut, MapPin, Calendar, Clock } from "lucide-react";
 
 const DashboardPage = () => {
-  const [userName, setUserName] = useState('');
-  const [stats, setStats] = useState({
-    hadir: 0,
-    izin: 0,
-    sakit: 0,
-    alpha: 0
-  });
+  const [user, setUser] = useState(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
+    // 1. Ambil data user dari localStorage
+    const userString = localStorage.getItem("user");
+    if (userString) {
       try {
-        const decoded = jwtDecode(token);
-        setUserName(decoded.nama || 'User');
+        setUser(JSON.parse(userString));
       } catch (error) {
-        console.error("Error decoding token", error);
+        console.error("Gagal mem-parsing data user dari localStorage:", error);
+        // Jika gagal parsing, user akan tetap null, dan UI akan menampilkan fallback
       }
     }
-    
-    // Fetch data riwayat untuk statistik
-    // Note: Backend 075 mungkin belum punya endpoint khusus stats, 
-    // jadi kita hitung manual dari endpoint riwayat jika ada.
-    const fetchStats = async () => {
-        try {
-            const response = await axios.get('http://localhost:3001/api/presensi', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            // Simulasi perhitungan statistik dari data riwayat
-            // Backend 075 sepertinya hanya return array data
-            const data = response.data;
-            // Hitung jumlah kehadiran (Dummy logic karena struktur data mungkin beda)
-            setStats({
-                hadir: data.length, 
-                izin: 0, // Backend 075 mungkin belum support status ini
-                sakit: 0,
-                alpha: 0
-            });
-        } catch (error) {
-            console.error("Gagal ambil data stats", error);
-        }
-    };
-    fetchStats();
+
+    // Timer untuk jam real-time
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
   }, []);
 
-  const barData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-    datasets: [
-      {
-        label: 'Kehadiran Bulanan',
-        data: [12, 19, 3, 5, 2, 3], // Data dummy statis untuk visualisasi
-        backgroundColor: 'rgba(59, 130, 246, 0.5)',
-      },
-    ],
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
   };
 
-  const doughnutData = {
-    labels: ['Hadir', 'Izin', 'Sakit', 'Alpha'],
-    datasets: [
-      {
-        data: [stats.hadir, stats.izin, stats.sakit, stats.alpha],
-        backgroundColor: [
-          'rgba(34, 197, 94, 0.5)',
-          'rgba(59, 130, 246, 0.5)',
-          'rgba(234, 179, 8, 0.5)',
-          'rgba(239, 68, 68, 0.5)',
-        ],
-        borderColor: [
-          'rgba(34, 197, 94, 1)',
-          'rgba(59, 130, 246, 1)',
-          'rgba(234, 179, 8, 1)',
-          'rgba(239, 68, 68, 1)',
-        ],
-        borderWidth: 1,
-      },
-    ],
+  const formatDate = (date) => {
+    return date.toLocaleDateString("id-ID", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
+  const formatTime = (date) => {
+    return date.toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
-          <p className="text-gray-600">Selamat datang kembali, <span className="font-semibold text-blue-600">{userName}</span>!</p>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm p-6 border-l-4 border-green-500">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-green-100 text-green-500">
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-pink-50 p-6">
+      <div className="max-w-5xl mx-auto space-y-8">
+        
+        {/* HEADER WELCOME */}
+        <div className="bg-gradient-to-r from-orange-400 to-pink-500 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <UserCheck size={150} />
+          </div>
+          <div className="relative z-10">
+            <h1 className="text-4xl font-extrabold mb-2">
+              Halo, {user?.nama || "User"}! 👋
+            </h1>
+            <p className="text-orange-100 font-medium text-lg mb-6">
+              Selamat datang kembali di Aplikasi Presensi.
+            </p>
+            
+            <div className="flex flex-wrap gap-4">
+              <div className="bg-white/20 backdrop-blur-md px-4 py-2 rounded-xl flex items-center gap-2 font-bold border border-white/30">
+                <Calendar size={18} /> {formatDate(currentTime)}
               </div>
-              <div className="ml-4">
-                <p className="text-sm text-gray-500">Hadir</p>
-                <p className="text-2xl font-bold text-gray-800">{stats.hadir}</p>
+              <div className="bg-white/20 backdrop-blur-md px-4 py-2 rounded-xl flex items-center gap-2 font-bold border border-white/30">
+                <Clock size={18} /> {formatTime(currentTime)}
               </div>
             </div>
           </div>
-          {/* Card Izin/Sakit dll bisa ditambahkan di sini */}
         </div>
 
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="bg-white p-6 rounded-xl shadow-sm">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">Statistik Kehadiran</h3>
-            <Bar data={barData} />
-          </div>
-          <div className="bg-white p-6 rounded-xl shadow-sm">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">Persentase Status</h3>
-            <div className="w-2/3 mx-auto">
-              <Doughnut data={doughnutData} />
+        {/* MENU GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          
+          {/* CARD 1: PRESENSI (Untuk Semua User) */}
+          <Link to="/attendance" className="group">
+            <div className="bg-white p-6 rounded-3xl shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all border border-orange-100 h-full flex flex-col justify-between">
+              <div>
+                <div className="w-14 h-14 bg-pink-100 text-pink-500 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <UserCheck size={32} strokeWidth={2.5} />
+                </div>
+                <h3 className="text-xl font-extrabold text-gray-800 mb-2">Presensi Masuk/Pulang</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">
+                  Lakukan presensi harian dengan foto bukti dan lokasi GPS terkini.
+                </p>
+              </div>
+              <div className="mt-6 font-bold text-pink-500 flex items-center gap-2 group-hover:gap-3 transition-all">
+                Mulai Absen <span>→</span>
+              </div>
             </div>
-          </div>
+          </Link>
+
+          {/* CARD 2: LAPORAN (HANYA ADMIN) */}
+          {/* LOGIKA: Hanya render jika user ada DAN role-nya admin */}
+          {user && user.role === "admin" && (
+            <Link to="/report" className="group">
+              <div className="bg-white p-6 rounded-3xl shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all border border-orange-100 h-full flex flex-col justify-between">
+                <div>
+                  <div className="w-14 h-14 bg-orange-100 text-orange-500 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <FileText size={32} strokeWidth={2.5} />
+                  </div>
+                  <h3 className="text-xl font-extrabold text-gray-800 mb-2">Laporan Pegawai</h3>
+                  <p className="text-gray-500 text-sm leading-relaxed">
+                    Pantau data kehadiran seluruh pegawai, lokasi, dan bukti foto secara real-time.
+                  </p>
+                </div>
+                <div className="mt-6 font-bold text-orange-500 flex items-center gap-2 group-hover:gap-3 transition-all">
+                  Lihat Data <span>→</span>
+                </div>
+              </div>
+            </Link>
+          )}
+
+          {/* CARD 3: LOGOUT (Opsional di dashboard karena sudah ada di navbar, tapi bagus untuk UX mobile) */}
+          <button onClick={handleLogout} className="group text-left w-full">
+            <div className="bg-white p-6 rounded-3xl shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all border border-orange-100 h-full flex flex-col justify-between">
+              <div>
+                <div className="w-14 h-14 bg-gray-100 text-gray-500 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <LogOut size={32} strokeWidth={2.5} />
+                </div>
+                <h3 className="text-xl font-extrabold text-gray-800 mb-2">Logout Akun</h3>
+                <p className="text-gray-500 text-sm leading-relaxed">
+                  Keluar dari sesi aplikasi dengan aman di perangkat ini.
+                </p>
+              </div>
+              <div className="mt-6 font-bold text-gray-400 group-hover:text-red-500 flex items-center gap-2 group-hover:gap-3 transition-all">
+                Keluar Sekarang <span>→</span>
+              </div>
+            </div>
+          </button>
+
         </div>
       </div>
     </div>
