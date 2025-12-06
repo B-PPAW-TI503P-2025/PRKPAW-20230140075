@@ -26,7 +26,7 @@ app.get("/", (req, res) => {
 
 // Gunakan Routes
 app.use("/api/books", ruteBuku);
-app.use("/api/attendance", presensiRoutes);
+app.use("/api/presensi", presensiRoutes); 
 app.use("/api/reports", reportRoutes);
 app.use('/api/auth', authRoutes);
 
