@@ -159,3 +159,21 @@ exports.hapusPresensi = async (req, res) => {
 
 // Ekspor Upload Middleware juga
 exports.upload = upload;
+
+exports.getHistory = async (req, res) => {
+  try {
+    const userId = req.user.id; // Ambil ID dari token JWT user yang login
+    
+    // Cari presensi HANYA milik user tersebut
+    const data = await Presensi.findAll({
+      where: { userId: userId },
+      order: [['checkIn', 'DESC']]
+    });
+
+    // Kirim response
+    res.json(data); 
+  } catch (error) {
+    console.error("Error Get History:", error);
+    res.status(500).json({ message: "Gagal mengambil riwayat", error: error.message });
+  }
+};

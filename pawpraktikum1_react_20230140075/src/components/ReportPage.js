@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Download, AlertCircle, MapPin, X, ImageOff, FileText } from "lucide-react";
+// UBAH ICON: Ganti 'Download' jadi 'RefreshCw'
+import { RefreshCw, AlertCircle, MapPin, X, ImageOff, FileText } from "lucide-react";
 
 const ReportPage = () => {
   const [dataPresensi, setDataPresensi] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [userRole, setUserRole] = useState(""); // Simpan role user
+  const [userRole, setUserRole] = useState(""); 
   
   // STATE POPUP GAMBAR
   const [selectedImage, setSelectedImage] = useState(null);
@@ -42,7 +43,7 @@ const ReportPage = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Normalisasi data (jika endpoint history mengembalikan object wrapper)
+      // Normalisasi data
       const rawData = response.data.data || response.data;
       const listData = Array.isArray(rawData) ? rawData : [];
 
@@ -98,9 +99,10 @@ const ReportPage = () => {
                 const user = JSON.parse(localStorage.getItem("user"));
                 fetchReport(user);
             }}
-            className="relative z-10 bg-white/10 backdrop-blur-md border border-white/20 text-white px-6 py-3 rounded-xl font-bold hover:bg-white hover:text-indigo-900 transition-all flex items-center gap-2 shadow-lg active:scale-95"
+            className="relative z-10 bg-white/10 backdrop-blur-md border border-white/20 text-white px-6 py-3 rounded-xl font-bold hover:bg-white hover:text-indigo-900 transition-all flex items-center gap-2 shadow-lg active:scale-95 group"
           >
-            <Download size={20} /> REFRESH
+            {/* ICON DIGANTI JADI REFRESH */}
+            <RefreshCw size={20} className="group-hover:rotate-180 transition-transform duration-500" /> REFRESH
           </button>
         </div>
 
@@ -127,7 +129,7 @@ const ReportPage = () => {
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-200 text-left">
                     <th className="py-5 px-6 font-extrabold text-slate-500 uppercase text-xs tracking-wider">No</th>
-                    {/* Kolom Pegawai hanya relevan untuk Admin */}
+                    
                     {userRole === "admin" && (
                         <th className="py-5 px-6 font-extrabold text-slate-500 uppercase text-xs tracking-wider">Pegawai</th>
                     )}
@@ -143,7 +145,6 @@ const ReportPage = () => {
                       <tr key={item.id || index} className="hover:bg-indigo-50/30 transition-colors">
                         <td className="py-4 px-6 font-bold text-slate-400">{index + 1}</td>
                         
-                        {/* Nama Pegawai (Admin Only) */}
                         {userRole === "admin" && (
                             <td className="py-4 px-6">
                             <div className="flex items-center gap-3">
@@ -175,7 +176,6 @@ const ReportPage = () => {
                           )}
                         </td>
                         
-                        {/* FOTO */}
                         <td className="py-4 px-6 text-center">
                           {getImageUrl(item.buktiFoto) ? (
                             <div className="relative group/img flex justify-center">

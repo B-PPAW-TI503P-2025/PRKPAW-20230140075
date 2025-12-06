@@ -2,21 +2,24 @@ const express = require("express");
 const router = express.Router();
 const presensiController = require("../controllers/presensiController");
 
-// PERBAIKAN: Import 'authenticateToken' dan 'isAdmin' dalam SATU baris saja.
-// Pastikan tidak ada baris 'require' lain untuk permissionMiddleware selain ini.
 const { authenticateToken, isAdmin } = require("../middleware/permissionMiddleware");
 
-// Middleware ini akan jalan untuk semua rute di bawahnya
+// Middleware Auth untuk semua
 router.use(authenticateToken);
 
 // --- RUTE PRESENSI ---
 
-// Khusus Admin: Melihat semua laporan
+// 1. Rute History (User Biasa) -> INI YANG TADINYA HILANG
+// Endpoint: /api/attendance/history
+router.get("/history", presensiController.getHistory);
+
+// 2. Rute Admin Report (Admin Only)
+// Endpoint: /api/attendance/
 router.get("/", isAdmin, presensiController.getAllPresensi); 
 
 router.post(
   "/check-in",
-  [presensiController.upload.single("image")], // authenticateToken sudah dipanggil di router.use di atas
+  [presensiController.upload.single("image")],
   presensiController.CheckIn
 );
 
