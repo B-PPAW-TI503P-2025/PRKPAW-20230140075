@@ -1,75 +1,91 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { LogOut, LayoutDashboard, UserCheck, FileText } from "lucide-react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { LogOut, LayoutDashboard, UserCheck, FileText } from "lucide-react"; // Hapus Icon History
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const token = localStorage.getItem("token");
   
   const userString = localStorage.getItem("user");
   const user = userString ? JSON.parse(userString) : null;
 
-  // --- UPDATE LOGIC LOGOUT DI SINI ---
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    
-    // TAMBAHAN PENTING:
-    // Hapus status presensi harian saat logout agar bisa tes ulang
     localStorage.removeItem("attendanceStatus"); 
-    
     navigate("/login");
   };
 
+  const isActive = (path) => location.pathname === path;
+
+  const getLinkClass = (path) => 
+    `flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all duration-300 ${
+      isActive(path) 
+        ? "bg-indigo-50 text-indigo-600 shadow-sm border-r-4 border-indigo-600" 
+        : "text-slate-500 hover:bg-slate-50 hover:text-indigo-600"
+    }`;
+
   return (
-    // Ubah border bawah jadi ungu tipis (border-indigo-50)
-    <nav className="bg-white/90 backdrop-blur-md border-b border-indigo-50 sticky top-0 z-50 shadow-sm transition-all">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="flex justify-between items-center h-20">
-          
-          {/* LOGO BRAND */}
-          <Link to="/dashboard" className="flex items-center gap-2 group">
-            {/* Icon Box: Gradient Ungu */}
-            <div className="bg-gradient-to-br from-indigo-600 to-fuchsia-600 p-2.5 rounded-xl text-white shadow-lg shadow-indigo-200 group-hover:shadow-indigo-300 group-hover:scale-105 transition-all duration-300">
-               <UserCheck size={24} strokeWidth={3} />
-            </div>
-            {/* Text: Gradient Ungu Tua ke Pink */}
-            <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-900 to-fuchsia-700 tracking-tight group-hover:to-indigo-600 transition-all">
-              PRESENSI<span className="text-slate-800">APP</span>
-            </span>
-          </Link>
-
-          {token && (
-            <div className="flex items-center gap-8">
-              {/* MENU LINKS (Desktop) */}
-              <div className="hidden md:flex items-center gap-6">
-                <Link to="/dashboard" className="flex items-center gap-2 text-slate-500 font-bold hover:text-indigo-600 transition-colors">
-                  <LayoutDashboard size={18} /> Dashboard
-                </Link>
-                <Link to="/attendance" className="flex items-center gap-2 text-slate-500 font-bold hover:text-indigo-600 transition-colors">
-                  <UserCheck size={18} /> Presensi
-                </Link>
-                
-                {user && user.role === "admin" && (
-                  <Link to="/report" className="flex items-center gap-2 text-slate-500 font-bold hover:text-fuchsia-600 transition-colors">
-                    <FileText size={18} /> Laporan
-                  </Link>
-                )}
-              </div>
-              
-              <div className="h-6 w-px bg-slate-200 hidden md:block"></div>
-
-              {/* LOGOUT BUTTON */}
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 bg-red-50 text-red-600 px-5 py-2.5 rounded-full font-bold hover:bg-red-600 hover:text-white transition-all duration-300 shadow-sm hover:shadow-red-200"
-              >
-                <LogOut size={18} /> Logout
-              </button>
-            </div>
-          )}
+    <nav className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-indigo-50 shadow-xl z-50 flex flex-col justify-between py-6 px-4">
+      
+      <div>
+        {/* LOGO */}
+        <div className="flex items-center gap-3 mb-10 px-2 mt-2">
+          <div className="bg-gradient-to-br from-indigo-600 to-fuchsia-600 p-2 rounded-xl text-white shadow-lg shadow-indigo-200">
+             <UserCheck size={28} strokeWidth={3} />
+          </div>
+          <div>
+            <h1 className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-900 to-fuchsia-700 tracking-tight leading-none">
+              PRESENSI
+            </h1>
+            <span className="text-[10px] font-bold text-slate-400 tracking-[0.2em]">SYSTEM</span>
+          </div>
         </div>
+
+        {/* MENU LINKS */}
+        {token && (
+          <div className="flex flex-col gap-2">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-2">Menu Utama</p>
+            
+            <Link to="/dashboard" className={getLinkClass("/dashboard")}>
+              <LayoutDashboard size={20} /> Dashboard
+            </Link>
+
+            <Link to="/attendance" className={getLinkClass("/attendance")}>
+              <UserCheck size={20} /> Presensi
+            </Link>
+
+            {/* --- MENU LAPORAN (PENGGANTI RIWAYAT) --- */}
+            {/* Diakses oleh semua user, logic pembeda ada di dalam halaman ReportPage */}
+            <Link to="/report" className={getLinkClass("/report")}>
+              <FileText size={20} /> Laporan
+            </Link>
+          </div>
+        )}
       </div>
+
+      {/* USER PROFILE & LOGOUT */}
+      {token && (
+        <div className="border-t border-slate-100 pt-6">
+           <div className="flex items-center gap-3 mb-6 px-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
+              <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-bold shadow-sm">
+                {user?.nama ? user.nama.charAt(0).toUpperCase() : "U"}
+              </div>
+              <div className="overflow-hidden">
+                <p className="text-sm font-bold text-slate-700 truncate w-32">{user?.nama || "User"}</p>
+                <p className="text-xs text-slate-400 truncate w-32">{user?.role || "Member"}</p>
+              </div>
+           </div>
+
+           <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 px-4 py-3 rounded-xl font-bold hover:bg-red-600 hover:text-white transition-all duration-300 shadow-sm hover:shadow-red-200"
+          >
+            <LogOut size={18} /> Keluar
+          </button>
+        </div>
+      )}
     </nav>
   );
 };

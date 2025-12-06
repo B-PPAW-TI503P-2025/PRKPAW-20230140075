@@ -1,18 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+// Hapus import Link, LogOut, Menu yang tidak lagi dipakai di sini
 import { 
-  UserCheck, 
   Calendar, 
   Clock, 
-  LayoutDashboard, 
-  LogOut, 
-  Menu 
+  LayoutDashboard 
 } from "lucide-react";
 
 const DashboardPage = () => {
   const [user, setUser] = useState(null);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const navigate = useNavigate();
+  
+  // Hook useNavigate dihapus karena logout sudah diurus Navbar
 
   useEffect(() => {
     // Ambil data user dari localStorage
@@ -25,12 +23,6 @@ const DashboardPage = () => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login");
-  };
 
   const formatDate = (date) => {
     return date.toLocaleDateString("id-ID", {
@@ -50,53 +42,14 @@ const DashboardPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
+    // Tidak perlu min-h-screen disini karena sudah di wrapper App.js
+    <div className="font-sans">
       
-      {/* --- NAVBAR (BARU) --- */}
-      <nav className="bg-white px-6 py-4 shadow-sm sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto flex justify-between items-center">
-          
-          {/* Logo Brand - Warna Ungu */}
-          <div className="flex items-center gap-2">
-            <div className="bg-indigo-600 p-2 rounded-lg text-white shadow-md shadow-indigo-200">
-              <UserCheck size={24} strokeWidth={2.5} />
-            </div>
-            <h1 className="text-2xl font-black tracking-tighter text-indigo-900">
-              PRESENSI<span className="text-indigo-600">APP</span>
-            </h1>
-          </div>
-
-          {/* Menu Kanan (Desktop) */}
-          <div className="hidden md:flex items-center gap-8">
-            <Link to="/dashboard" className="flex items-center gap-2 text-slate-600 hover:text-indigo-600 font-bold transition-colors">
-              <LayoutDashboard size={18} />
-              Dashboard
-            </Link>
-            <Link to="/attendance" className="flex items-center gap-2 text-slate-600 hover:text-indigo-600 font-bold transition-colors">
-              <UserCheck size={18} />
-              Presensi
-            </Link>
-            
-            <div className="h-6 w-px bg-slate-200"></div>
-
-            <button 
-              onClick={handleLogout}
-              className="flex items-center gap-2 bg-pink-50 text-pink-600 px-5 py-2.5 rounded-full font-bold hover:bg-pink-100 hover:text-pink-700 transition-all text-sm"
-            >
-              <LogOut size={16} />
-              Logout
-            </button>
-          </div>
-
-          {/* Mobile Menu Button (Optional) */}
-          <button className="md:hidden text-slate-600">
-            <Menu size={24} />
-          </button>
-        </div>
-      </nav>
+      {/* NAVBAR LAMA DIHAPUS. 
+         Sekarang Navbar otomatis muncul di sebelah kiri dari Layout App.js 
+      */}
 
       {/* --- HERO SECTION (HEADER) --- */}
-      {/* Kartu menu di bawah dihapus, hanya menyisakan header gradient yang elegan */}
       <div className="bg-gradient-to-r from-indigo-900 via-purple-900 to-fuchsia-900 text-white relative overflow-hidden pb-32 pt-16 px-6 rounded-b-[3rem] shadow-xl">
         
         {/* Dekorasi Background */}

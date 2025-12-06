@@ -1,15 +1,28 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const presensiController = require('../controllers/presensiController');
-const { body, validationResult } = require('express-validator');
-const { authenticateToken } = require('../middleware/permissionMiddleware');
+const presensiController = require("../controllers/presensiController");
+
+// PERBAIKAN: Import 'authenticateToken' dan 'isAdmin' dalam SATU baris saja.
+// Pastikan tidak ada baris 'require' lain untuk permissionMiddleware selain ini.
+const { authenticateToken, isAdmin } = require("../middleware/permissionMiddleware");
+
+// Middleware ini akan jalan untuk semua rute di bawahnya
 router.use(authenticateToken);
-router.post('/check-in', [authenticateToken, presensiController.upload.single('image')], presensiController.CheckIn);
-router.post('/check-out', authenticateToken, presensiController.CheckOut);
-const updateValidationChain = [
-    body('checkIn').optional().isISO8601().withMessage('Format checkIn harus berupa tanggal yang valid'),
-    body('checkOut').optional().isISO8601().withMessage('Format checkOut harus berupa tanggal yang valid'),
-]
-router.put("/:id", authenticateToken, updateValidationChain, presensiController.updatePresensi);
-router.delete("/:id", authenticateToken, presensiController.deletePresensi);
+
+// --- RUTE PRESENSI ---
+
+// Khusus Admin: Melihat semua laporan
+router.get("/", isAdmin, presensiController.getAllPresensi); 
+
+router.post(
+  "/check-in",
+  [presensiController.upload.single("image")], // authenticateToken sudah dipanggil di router.use di atas
+  presensiController.CheckIn
+);
+
+router.post("/check-out", presensiController.CheckOut);
+
+router.put("/:id", presensiController.updatePresensi);
+router.delete("/:id", presensiController.hapusPresensi);
+
 module.exports = router;
